@@ -4,17 +4,63 @@ using System.Data.Entity;
 using System.IO;
 using System.Linq;
 using Newtonsoft.Json;
-
 namespace TestNinja.Mocking
 {
     public class VideoService
     {
-        public string ReadVideoTitle()
+        public IFileReader propFileReader { get; set; }
+        private IFileReader _constFileReader { get; set; }
+
+
+        public VideoService()
+        {
+            propFileReader = new FileReader();
+        }
+
+        public VideoService(IFileReader fileReader)
+        {
+            _constFileReader = fileReader;
+        }
+
+        public string ReadVideoTitle_Original()
         {
             var str = File.ReadAllText("video.txt");
             var video = JsonConvert.DeserializeObject<Video>(str);
             if (video == null)
                 return "Error parsing the video.";
+            return video.Title;
+        }
+
+        public string ReadVideoTitle_MethodInjection(IFileReader fileReader)
+        {
+            var str = fileReader.Read("video.txt");
+            var video = JsonConvert.DeserializeObject<Video>(str);
+            
+            if (video == null)
+                return "Error parsing the video.";
+            
+            return video.Title;
+        }
+
+        public string ReadVideoTitle_PropertyInjection()
+        {
+            var str = propFileReader.Read("video.txt");
+            var video = JsonConvert.DeserializeObject<Video>(str);
+            
+            if (video == null)
+                return "Error parsing the video.";
+            
+            return video.Title;
+        }
+
+        public string ReadVideoTitle_ConstructorInjection()
+        {
+            var str = _constFileReader.Read("video.txt");
+            var video = JsonConvert.DeserializeObject<Video>(str);
+
+            if (video == null)
+                return "Error parsing the video.";
+            
             return video.Title;
         }
 
