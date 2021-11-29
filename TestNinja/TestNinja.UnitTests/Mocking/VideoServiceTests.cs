@@ -65,5 +65,49 @@ namespace TestNinja.UnitTests.Mocking
             // Assert
             Assert.That(result, Does.Contain("Error").IgnoreCase);
         }
+
+        [Test]
+        public void GetUnprocessedVideosAsCsv_WhenValidIds_ReturnListOfIds()
+        {
+            // Arrange
+            var videoRepository = new Mock<IVideoRepository>();           
+            videoRepository.Setup(x => x.GetUnprocessedVideos()).Returns(SetupVideos());
+            var service = new VideoService(videoRepository.Object);
+
+            // Act
+            var result = service.GetUnprocessedVideosAsCsv();
+
+            // Assert
+            videoRepository.Verify(x => x.GetUnprocessedVideos(), Times.Once);
+
+            Assert.That(result, Is.EqualTo("1,2,3"));
+        }
+
+        [Test]
+        public void GetUnprocessedVideosAsCsv_WhenNoValidIds_ReturnEmptyList()
+        {
+            // Arrange
+            var videoRepository = new Mock<IVideoRepository>();
+            videoRepository.Setup(x => x.GetUnprocessedVideos()).Returns(new List<Video>());
+            var service = new VideoService(videoRepository.Object);
+
+            // Act
+            var result = service.GetUnprocessedVideosAsCsv();
+
+            // Assert
+            videoRepository.Verify(x => x.GetUnprocessedVideos(), Times.Once);
+
+            Assert.That(result, Is.EqualTo(""));
+        }
+
+        private IEnumerable<Video> SetupVideos()
+        {
+            return new List<Video>
+            {
+                new Video { Id = 1, IsProcessed = true, Title = "One"},
+                new Video { Id = 2, IsProcessed = true, Title = "Two"},
+                new Video { Id = 3, IsProcessed = false, Title = "Three"},
+            };
+        }
     }
 }
