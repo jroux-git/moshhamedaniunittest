@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Moq;
 using NUnit.Framework;
 using TestNinja.Mocking;
 
@@ -11,6 +12,16 @@ namespace TestNinja.UnitTests.Mocking
     [TestFixture]
     public class VideoServiceTests
     {
+        private Mock<IFileReader> _fileReader;
+        private VideoService _service;
+
+        [SetUp]
+        public void Setup()
+        {
+            _fileReader = new Mock<IFileReader>();
+            _service = new VideoService(_fileReader.Object);
+        }
+
         [Test]
         public void ReadVideoTitle_MethodInjection_EmptyFile_ReturnError()
         {
@@ -39,6 +50,19 @@ namespace TestNinja.UnitTests.Mocking
             
             var result = service.ReadVideoTitle_ConstructorInjection();
 
+            Assert.That(result, Does.Contain("Error").IgnoreCase);
+        }
+
+        [Test]
+        public void ReadVideoTitle_ConstructorInjection_EmptyFileUsingMoq_ReturnError()
+        {
+            // Arrange
+            _fileReader.Setup(fr => fr.Read("video.txt")).Returns("");
+
+            // Act
+            var result = _service.ReadVideoTitle_ConstructorInjection();
+
+            // Assert
             Assert.That(result, Does.Contain("Error").IgnoreCase);
         }
     }
